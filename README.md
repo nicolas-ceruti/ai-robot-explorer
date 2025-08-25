@@ -1,121 +1,127 @@
-# Robô Explorador Inteligente
 
+# Intelligent Explorer Robot
 
-## Sobre o Projeto
+## About the Project
 
-Este projeto, desenvolvido como parte da disciplina de Inteligência Artificial, simula o comportamento de um robô autônomo em um ambiente de grid. O objetivo principal é demonstrar e solidificar a compreensão sobre as diferentes tipologias de agentes inteligentes.
+This project, developed as part of an Artificial Intelligence course, simulates the behavior of an autonomous robot in a grid-based environment. The main objective is to demonstrate and solidify the understanding of different intelligent agent typologies.
 
-A complexidade do agente evolui progressivamente através de quatro etapas, começando com um agente reativo simples e sem memória, e avançando até um agente sofisticado baseado em utilidade que otimiza rotas com base em custos de terreno.
+The agent's complexity evolves progressively through four stages, starting with a simple, memoryless reactive agent and advancing to a sophisticated utility-based agent that optimizes routes based on terrain costs.
 
-## Estrutura de Arquivos
+## File Structure
 
-O projeto está organizado da seguinte maneira para garantir modularidade e clareza:
+The project is organized as follows to ensure modularity and clarity:
 
 ```
-PROJETO_ROBO_IA/
+INTELLIGENT_ROBOT_PROJECT/
 ├── robo_explorer/
-│   ├── __init__.py         # Torna o diretório um pacote Python
-│   ├── agents.py           # Contém as classes de todos os agentes (Robôs)
-│   ├── environment.py      # Contém a classe que gerencia o ambiente (grid, obstáculos, etc.)
-│   └── visualization.py    # Contém a classe para a visualização dinâmica
-├── main.py                 # Script principal para executar as simulações
-└── requirements.txt        # Lista de dependências do projeto
+│   ├── __init__.py         # Makes the directory a Python package
+│   ├── agents.py           # Contains the classes for all agents (Robots)
+│   ├── environment.py      # Contains the class that manages the environment (grid, obstacles, etc.)
+│   └── visualization.py    # Contains the class for dynamic visualization
+├── main.py                 # Main script to run the simulations
+└── requirements.txt        # Project dependency list
 ```
 
-## Tecnologias Utilizadas
+## Technologies Used
 
   * **Python 3.x**
-  * **Matplotlib:** Para a visualização gráfica do grid e do comportamento do agente.
-  * **NumPy:** Como dependência do Matplotlib para manipulação de matrizes.
+  * **Matplotlib:** For the graphical visualization of the grid and the agent's behavior.
+  * **NumPy:** As a dependency for Matplotlib for array manipulation.
 
-## Configuração do Ambiente
+## Environment Setup
 
-Siga os passos abaixo para configurar e executar o projeto em sua máquina local.
+Follow the steps below to set up and run the project on your local machine.
 
-### Pré-requisitos
+### Prerequisites
 
-  * Certifique-se de ter o Python 3 instalado. Você pode baixá-lo em [python.org](https://www.python.org/).
+  * Ensure you have Python 3 installed. You can download it from [python.org](https://www.python.org/).
 
-### Instalação
+### Installation
 
-1.  **Clone o repositório** (ou simplesmente baixe e descompacte os arquivos em uma pasta chamada `PROJETO_ROBO_IA`).
+1.  **Clone the repository** (or simply download and unzip the files into a folder named `INTELLIGENT_ROBOT_PROJECT`).
 
-2.  **Crie o arquivo `requirements.txt`** na raiz do projeto (`PROJETO_ROBO_IA/`) com o seguinte conteúdo:
+2.  **Create the `requirements.txt` file** in the project's root directory (`INTELLIGENT_ROBOT_PROJECT/`) with the following content:
 
     ```
     matplotlib
     ```
 
-3.  **Abra um terminal** na pasta raiz do projeto.
+3.  **Open a terminal** in the project's root folder.
 
-4.  **Crie um ambiente virtual** para isolar as dependências do projeto:
+4.  **Create a virtual environment** to isolate the project's dependencies:
 
     ```bash
     python -m venv venv
     ```
 
-5.  **Ative o ambiente virtual:**
+5.  **Activate the virtual environment:**
 
-      * **No Windows:**
+      * **On Windows:**
         ```bash
         .\venv\Scripts\activate
         ```
-      * **No macOS / Linux:**
+      * **On macOS / Linux:**
         ```bash
         source venv/bin/activate
         ```
 
-6.  **Instale as bibliotecas necessárias** a partir do arquivo `requirements.txt`:
+6.  **Install the required libraries** from the `requirements.txt` file:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-## Como Executar
+## How to Run
 
-Toda a execução é controlada pelo arquivo `main.py`. Para escolher qual etapa da simulação você quer visualizar, edite o bloco final do arquivo.
+All simulations are controlled by the `main.py` file. To choose which stage of the simulation you want to visualize, edit the final block of the file.
 
-1.  **Abra o arquivo `main.py`** em um editor de código.
+1.  **Open the `main.py` file** in a code editor.
 
-2.  **Navegue até o final do arquivo**, no bloco `if __name__ == "__main__":`.
+2.  **Navigate to the end of the file**, to the `if __name__ == "__main__":` block.
 
-3.  **Descomente a função da etapa que deseja executar** e comente as outras. Por exemplo, para executar a Etapa 2:
+3.  **Uncomment the function for the stage you wish to run** and comment out the others. For example, to run Stage 2:
 
     ```python
     if __name__ == "__main__":
-        # Escolha qual etapa você quer visualizar de forma animada
-        # executar_etapa1()
-        executar_etapa2()
-        # executar_etapa3()
-        # executar_etapa4()
+        # Choose which stage you want to visualize with an animation
+        # execute_stage1()
+        execute_stage2()
+        # execute_stage3()
+        # execute_stage4()
     ```
 
-4.  **Execute o script** a partir do seu terminal (com o ambiente virtual ativado):
+4.  **Run the script** from your terminal (with the virtual environment activated):
 
     ```bash
     python main.py
     ```
 
-    Uma janela do Matplotlib aparecerá, mostrando a simulação passo a passo da etapa escolhida.
+    A Matplotlib window will appear, showing the step-by-step simulation of the chosen stage.
 
-## Descrição das Etapas (Agentes)
+## Description of Stages (Agents)
 
-### Etapa 1: Agente Reativo Simples
+### Stage 1: Simple Reactive Agent
 
-  * **Objetivo:** Encontrar as 4 paredes que delimitam o grid.
-  * **Lógica:** O robô escolhe uma direção e se move em linha reta até colidir com um limite. Ao colidir, ele registra a parede encontrada e escolhe uma nova direção para continuar a exploração. O ambiente não possui obstáculos internos.
+  * **Objective:** To find the 4 walls that delimit the grid.
+  * **Logic:** The robot chooses a direction and moves in a straight line until it collides with a boundary. Upon collision, it registers the wall it found and chooses a new direction to continue its exploration. The environment has no internal obstacles.
+<img width="785" height="703" alt="image" src="https://github.com/user-attachments/assets/dee5d26f-3ec2-4a1c-ab4d-a2113df21887" />
 
-### Etapa 2: Agente Reativo Baseado em Modelo
 
-  * **Objetivo:** Explorar o máximo possível de um mapa com obstáculos.
-  * **Lógica:** O agente utiliza uma memória (`mapa_visitados`) para saber por onde já passou. Ele sempre prioriza se mover para células adjacentes que ainda não foram visitadas. Se todos os vizinhos já foram visitados, ele se move para uma célula aleatória adjacente para tentar "desbloquear" seu caminho.
+### Stage 2: Model-Based Reactive Agent
 
-### Etapa 3: Agente Baseado em Objetivos
+  * **Objective:** To explore as much of a map with obstacles as possible.
+  * **Logic:** The agent uses a memory (`mapa_visitados`) to know where it has already been. It always prioritizes moving to adjacent cells that have not yet been visited. If all neighbors have already been visited, it moves to a random adjacent cell to try and "unblock" its path.
+<img width="747" height="676" alt="image" src="https://github.com/user-attachments/assets/82ab9c96-c0c2-4a62-b963-abe370ed212f" />
 
-  * **Objetivo:** Encontrar o caminho mais curto (em número de passos) entre um ponto de início e um ponto de fim aleatórios.
-  * **Lógica:** O agente recebe o mapa completo com os obstáculos de antemão. Ele utiliza o algoritmo **A\* (A-Estrela)** para calcular a rota ótima antes de se mover. A animação mostra o robô executando o caminho que já foi planejado.
 
-### Etapa 4: Agente Baseado em Utilidade
+### Stage 3: Goal-Based Agent
 
-  * **Objetivo:** Encontrar o caminho de **menor custo total** entre um ponto de início e um de fim fixos, em um mapa com diferentes tipos de terreno.
-  * **Lógica:** Similar à Etapa 3, o agente usa o algoritmo A\*, mas a função de custo é modificada. Cada passo não vale "1", mas sim o valor do custo do terreno da célula de destino (ex: 1 para normal, 2 para arenoso, 3 para rochoso). Isso pode fazer com que o robô escolha um caminho mais longo em passos para evitar terrenos caros.
+  * **Objective:** To find the shortest path (in number of steps) between a random start point and a random end point.
+  * **Logic:** The agent receives the complete map with obstacles beforehand. It uses the **A\* (A-Star)** algorithm to calculate the optimal route before moving. The animation shows the robot executing the pre-planned path.
+<img width="678" height="671" alt="image" src="https://github.com/user-attachments/assets/9149b2da-c33a-4029-b10d-f46e0d195bf3" />
+
+### Stage 4: Utility-Based Agent
+
+  * **Objective:** To find the path of **least total cost** between a start and end point, on a map with different types of terrain.
+  * **Logic:** Similar to Stage 3, the agent uses the A\* algorithm, but the cost function is modified. Each step is not worth "1", but rather the cost value of the target terrain cell (e.g., 1 for normal, 2 for sandy, 3 for rocky). This may cause the robot to choose a path that is longer in steps to avoid expensive terrain.
+<img width="710" height="674" alt="image" src="https://github.com/user-attachments/assets/edaadf21-da6c-45f1-9d21-3233667be83e" />
