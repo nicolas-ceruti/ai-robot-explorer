@@ -1,0 +1,151 @@
+Documento de Pseudocódigos: Robô Explorador Inteligente
+
+Alunos:  Nicolas Ceruti, Felipe Giovanella, Gustavo Campestrini, Julia Welter
+
+================================================================
+Etapa 1: Agente Reativo Simples
+================================================================
+Objetivo: Encontrar as quatro paredes do grid.
+Lógica: O agente se move em linha reta até colidir com um limite e então escolhe uma nova direção.
+
+INÍCIO
+    // Estado interno do agente
+    DEFINIR paredes_encontradas COMO um conjunto vazio
+    DEFINIR direcao_atual COMO uma direção aleatória inicial (ex: Norte)
+
+    // Loop principal de exploração
+    ENQUANTO o tamanho de paredes_encontradas < 4 FAÇA
+
+        // Ação: Tenta mover na direção que está "lembrando"
+        TENTAR mover o robô na direcao_atual
+
+        // Percepção e Regra: Se o movimento falhou, mude de direção
+        SE o movimento falhou (colisão com limite) ENTÃO
+            // 1. Atualiza o progresso do objetivo
+            IDENTIFICAR a parede que foi atingida (baseado na posição e direção)
+            ADICIONAR a parede em paredes_encontradas
+
+            // 2. Atualiza seu estado interno (memória)
+            ESCOLHER uma nova direcao_atual que seja diferente da anterior
+        FIM SE
+        // Se o movimento foi bem-sucedido, o loop continua e ele tentará a mesma direção novamente
+
+    FIM ENQUANTO
+
+    EXIBIR "Perímetro do ambiente detectado."
+FIM
+
+
+================================================================
+Etapa 2: Agente Reativo Baseado em Modelo
+================================================================
+Objetivo: Visitar o maior número de células do grid, evitando repetições.
+Lógica: O agente usa uma memória (mapa) para priorizar a exploração de células novas.
+
+INÍCIO
+    // O agente agora é atualizado com uma memória (um estado interno)
+    // Ele deve manter um "mapa" de quais células já visitou
+    DEFINIR mapa_visitados COMO um conjunto com a posição inicial do robô
+    DEFINIR passos_redundantes COMO 0
+
+    // O objetivo é visitar o maior número possível de células do grid
+    PARA cada passo de 1 até um número máximo de passos FAÇA
+        // Percepção: Identificar células vizinhas que são válidas (dentro do grid e sem obstáculos)
+        DEFINIR vizinhos_validos COMO as células adjacentes para onde o robô pode se mover
+
+        // Estado Interno: Consultar a memória para encontrar vizinhos novos
+        // Evitando repetir células já visitadas
+        DEFINIR vizinhos_nao_visitados COMO os vizinhos_validos que NÃO estão em mapa_visitados
+
+        // Regra de Ação: Decidir para onde mover
+        SE a lista vizinhos_nao_visitados NÃO está vazia ENTÃO
+            DEFINIR proxima_posicao COMO um vizinho aleatório da lista vizinhos_nao_visitados
+        SENÃO SE a lista vizinhos_validos NÃO está vazia ENTÃO
+            // Se não há para onde ir, volta para uma casa já visitada
+            DEFINIR proxima_posicao COMO um vizinho aleatório da lista vizinhos_validos
+            INCREMENTAR passos_redundantes
+        SENÃO
+            // O robô está preso (sem vizinhos válidos), encerra a exploração
+            PARAR o loop
+        FIM SE
+
+        // Ação: Mover o robô e atualizar a memória
+        MOVER robô para proxima_posicao
+        ADICIONAR proxima_posicao em mapa_visitados
+    FIM PARA
+
+    EXIBIR métricas de exploração (células visitadas, passos_redundantes).
+FIM
+
+
+================================================================
+Etapa 3: Agente Baseado em Objetivos
+================================================================
+Objetivo: Encontrar o caminho mais curto entre um ponto de início e um de destino.
+Lógica: Utiliza o algoritmo de busca A* (A-Estrela).
+
+FUNÇÃO A_Estrela(inicio, fim)
+    // Dados uma célula de partida (xi , yi) e uma célula de destino (xf , yf)
+    DEFINIR lista_aberta COMO uma fila de prioridade contendo o nó inicial
+    DEFINIR veio_de COMO um mapa vazio para reconstruir o caminho
+
+    DEFINIR g_score (custo do início ao nó) para todos os nós como infinito; DEFINIR g_score[inicio] COMO 0
+    DEFINIR f_score (g_score + heurística) para todos os nós como infinito; DEFINIR f_score[inicio] COMO a distância heurística
+
+    ENQUANTO lista_aberta NÃO está vazia FAÇA
+        DEFINIR atual COMO o nó em lista_aberta com o menor f_score
+        
+        // Objetivo do Agente: encontrar e percorrer um caminho válido do início ao fim
+        SE atual é igual a fim ENTÃO
+            RETORNAR o caminho reconstruído a partir de veio_de
+        FIM SE
+
+        REMOVER atual de lista_aberta
+
+        PARA CADA vizinho de atual QUE SEJA UMA CÉLULA VÁLIDA (sem obstáculo e dentro do grid) FAÇA
+            // Custo de cada passo é 1
+            DEFINIR tentativa_g_score COMO g_score[atual] + 1
+
+            SE tentativa_g_score < g_score[vizinho] ENTÃO
+                DEFINIR veio_de[vizinho] COMO atual
+                DEFINIR g_score[vizinho] COMO tentativa_g_score
+                DEFINIR f_score[vizinho] COMO g_score[vizinho] + distância heurística
+
+                SE vizinho não está em lista_aberta ENTÃO
+                    ADICIONAR vizinho em lista_aberta
+                FIM SE
+            FIM SE
+        FIM PARA CADA
+    FIM ENQUANTO
+
+    RETORNAR falha (nenhum caminho encontrado)
+FIM FUNÇÃO
+
+
+================================================================
+Etapa 4: Agente Baseado em Utilidade
+================================================================
+Objetivo: Encontrar o caminho de menor custo total, considerando terrenos com custos variados.
+Lógica: Utiliza uma versão modificada do algoritmo A*.
+
+// O pseudocódigo é idêntico ao da Etapa 3, com uma única modificação
+// para encontrar o caminho que minimiza o custo total.
+// A mudança ocorre dentro do loop "PARA CADA vizinho de atual":
+
+...
+PARA CADA vizinho de atual QUE SEJA UMA CÉLULA VÁLIDA FAÇA
+    // --- INÍCIO DA MODIFICAÇÃO ---
+
+    // Cada tipo de célula tem um "custo de movimento" associado
+    DEFINIR custo_movimento COMO o custo do terreno da célula 'vizinho'
+    DEFINIR tentativa_g_score COMO g_score[atual] + custo_movimento
+
+    // --- FIM DA MODIFICAÇÃO ---
+
+    SE tentativa_g_score < g_score[vizinho] ENTÃO
+        // O resto do algoritmo para atualizar os scores e o caminho
+        // continua exatamente igual ao da Etapa 3...
+        ...
+    FIM SE
+FIM PARA CADA
+...
