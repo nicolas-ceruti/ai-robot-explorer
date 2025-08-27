@@ -69,7 +69,7 @@ def executar_etapa4_parcialmente_observavel():
     print("\n--- EXECUTANDO ETAPA 4: AMBIENTE PARCIALMENTE OBSERVÁVEL ---")
     
     inicio, fim = (5, 0), (5, 9)
-    
+
     terrenos_mapa = {
         (5, 2): 3, (5, 3): 3, (6, 3): 3, (4, 4): 3, (5, 4): 3,
         (6, 4): 3, (4, 5): 3, (5, 5): 3, (6, 5): 3, (5, 7): 3,
@@ -94,7 +94,7 @@ def executar_etapa4_parcialmente_observavel():
         (3, 7): custo_borda, (4, 7): custo_borda, (5, 7): custo_borda, (6, 7): custo_borda, (7, 7): custo_borda,
     }
     
-    ambiente = Ambiente(n=10, obstaculos=[], terrenos=terrenos_mapa_dificil)
+    ambiente = Ambiente(n=10, obstaculos=[], terrenos=terrenos_mapa)
     
     visualizador = VisualizacaoDinamica(ambiente)
     robo = RoboUtilidadeParcial(ambiente, inicio, fim, visualizador=visualizador)
@@ -107,7 +107,7 @@ def executar_etapa4_parcialmente_observavel():
 if __name__ == "__main__":
     # Escolha qual etapa você quer visualizar de forma animada
     # executar_etapa1()
-    # executar_etapa2()
+    executar_etapa2()
     # executar_etapa3()
     # executar_etapa4()
-    executar_etapa4_parcialmente_observavel()
+    # executar_etapa4_parcialmente_observavel()
