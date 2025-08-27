@@ -111,7 +111,8 @@ All simulations are controlled by the `main.py` file. To choose which stage of t
 
   * **Objective:** To explore as much of a map with obstacles as possible.
   * **Logic:** The agent uses a memory (`mapa_visitados`) to know where it has already been. It always prioritizes moving to adjacent cells that have not yet been visited. If all neighbors have already been visited, it moves to a random adjacent cell to try and "unblock" its path.
-<img width="747" height="676" alt="image" src="https://github.com/user-attachments/assets/82ab9c96-c0c2-4a62-b963-abe370ed212f" />
+<img width="725" height="674" alt="image" src="https://github.com/user-attachments/assets/9b024744-5a4e-4c14-8ff2-8816fe3a5922" />
+
 
 
 ### Stage 3: Goal-Based Agent
@@ -124,4 +125,5 @@ All simulations are controlled by the `main.py` file. To choose which stage of t
 
   * **Objective:** To find the path of **least total cost** between a start and end point, on a map with different types of terrain.
   * **Logic:** Similar to Stage 3, the agent uses the A\* algorithm, but the cost function is modified. Each step is not worth "1", but rather the cost value of the target terrain cell (e.g., 1 for normal, 2 for sandy, 3 for rocky). This may cause the robot to choose a path that is longer in steps to avoid expensive terrain.
-<img width="710" height="674" alt="image" src="https://github.com/user-attachments/assets/edaadf21-da6c-45f1-9d21-3233667be83e" />
+<img width="838" height="699" alt="image" src="https://github.com/user-attachments/assets/d3a729d1-a3be-440e-a398-fdedf691ebc1" />
+
