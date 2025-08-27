@@ -53,40 +53,78 @@ class RoboReativoSimples(Robo):
             passos += 1
 
 class RoboBaseadoModelo(Robo):
+    """
+    Agente que usa um algoritmo de Busca em Profundidade (DFS) com uma pilha
+    para explorar o mapa de forma completa e eficiente.
+    """
     def __init__(self, ambiente, visualizador=None):
         super().__init__(ambiente)
+        print(f"Robô Baseado em Modelo (Inteligente) iniciado em: {self.get_posicao()}")
+        
+        # O mapa de visitados garante que cada célula seja processada uma vez.
         self.mapa_visitados = {self.get_posicao()}
+        
+        # A pilha armazena o caminho atual para permitir o backtracking inteligente.
+        self.caminho_pilha = [self.get_posicao()]
+        
         self.passos_redundantes = 0
-        self.caminho_percorrido = [self.get_posicao()]
+        self.caminho_percorrido_completo = [self.get_posicao()] # Para visualização
         self.visualizador = visualizador
 
-    def explorar(self, max_passos=500):
-        for _ in range(max_passos):
-            if self.visualizador:
-                self.visualizador.atualizar(robo=self, caminho=self.caminho_percorrido, mapa_visitados=self.mapa_visitados, titulo="Etapa 2: Mapeando...")
+    def explorar(self):
+        """Executa o ciclo de exploração usando a lógica DFS."""
+        
+        # O loop continua enquanto a pilha não estiver vazia.
+        while self.caminho_pilha:
+            posicao_atual = self.caminho_pilha[-1] # Olha o topo da pilha
+            self.x, self.y = posicao_atual
             
-            vizinhos_validos = self._get_vizinhos_de_posicao(self.get_posicao())
-            vizinhos_nao_visitados = [v for v in vizinhos_validos if v not in self.mapa_visitados]
+            # Atualiza a visualização a cada passo
+            if self.visualizador:
+                self.visualizador.atualizar(
+                    robo=self,
+                    caminho=self.caminho_percorrido_completo,
+                    mapa_visitados=self.mapa_visitados,
+                    titulo="Etapa 2: Mapeando com DFS..."
+                )
+
+            # Encontra vizinhos que ainda não foram visitados
+            vizinhos_nao_visitados = [
+                v for v in self._get_vizinhos_de_posicao(posicao_atual)
+                if v not in self.mapa_visitados
+            ]
+
             if vizinhos_nao_visitados:
-                proxima_posicao = random.choice(vizinhos_nao_visitados)
-            elif vizinhos_validos:
-                proxima_posicao = random.choice(vizinhos_validos); self.passos_redundantes += 1
-            else: break
-            self.x, self.y = proxima_posicao
-            self.mapa_visitados.add(self.get_posicao())
-            self.caminho_percorrido.append(self.get_posicao())
+                # Se encontrou um novo lugar para ir, avança
+                proximo_passo = random.choice(vizinhos_nao_visitados)
+                self.mapa_visitados.add(proximo_passo)
+                self.caminho_pilha.append(proximo_passo)
+                self.caminho_percorrido_completo.append(proximo_passo)
+            else:
+                # Se é um beco sem saída, faz o backtracking
+                self.caminho_pilha.pop()
+                if self.caminho_pilha: # Evita contar o último passo como redundante
+                    self.caminho_percorrido_completo.append(self.caminho_pilha[-1])
+                    self.passos_redundantes += 1
+        
         self.avaliar_desempenho()
+
     def avaliar_desempenho(self):
         total_acessiveis = (self.ambiente.n * self.ambiente.n) - len(self.ambiente.obstaculos)
         percentual_visitado = (len(self.mapa_visitados) / total_acessiveis) * 100 if total_acessiveis > 0 else 0
-        print(f"Completude: {percentual_visitado:.2f}%, Passos Redundantes: {self.passos_redundantes}")
+        print("\n--- Resultado Etapa 2 (Inteligente) ---")
+        print(f"Completude da Exploração: {percentual_visitado:.2f}%")
+        print(f"Eficiência (passos de backtracking): {self.passos_redundantes}")
+
     def _get_vizinhos_de_posicao(self, pos):
-        x, y = pos; vizinhos = []
+        x, y = pos
+        vizinhos = []
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             novo_x, novo_y = x + dx, y + dy
-            if self.ambiente.is_valido(novo_x, novo_y): vizinhos.append((novo_x, novo_y))
+            if self.ambiente.is_valido(novo_x, novo_y):
+                vizinhos.append((novo_x, novo_y))
         return vizinhos
-
+    
 class RoboBaseadoObjetivos(Robo):
     def __init__(self, ambiente, inicio, fim, visualizador=None):
         super().__init__(ambiente)
@@ -129,7 +167,42 @@ class RoboBaseadoObjetivos(Robo):
         while atual in veio_de: atual = veio_de[atual]; caminho_total.insert(0, atual)
         return caminho_total
 
+
+
 class RoboBaseadoUtilidade(RoboBaseadoObjetivos):
+    def encontrar_caminho(self):
+        # --- LÓGICA CORRIGIDA (DIJKSTRA) ---
+        # A fila de prioridade agora usa apenas o g_score (custo real)
+        lista_aberta = [(0, self.inicio)] 
+        veio_de = {}
+        g_score = {(x, y): float('inf') for x in range(self.ambiente.n) for y in range(self.ambiente.n)}
+        g_score[self.inicio] = 0
+        lista_aberta_set = {self.inicio}
+
+        while lista_aberta:
+            custo_atual, atual = heapq.heappop(lista_aberta)
+            lista_aberta_set.remove(atual)
+
+            if custo_atual > g_score[atual]:
+                continue
+            if atual == self.fim:
+                return self._reconstruir_caminho(veio_de, atual)
+            
+            x, y = atual
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                vizinho = (x + dx, y + dy)
+                if self.ambiente.is_valido(vizinho[0], vizinho[1]):
+                    custo_movimento = self.ambiente.get_custo(vizinho[0], vizinho[1])
+                    tentativa_g_score = g_score[atual] + custo_movimento
+                    if tentativa_g_score < g_score[vizinho]:
+                        veio_de[vizinho] = atual
+                        g_score[vizinho] = tentativa_g_score
+                        # A prioridade na fila é o custo real (g_score), não o f_score
+                        if vizinho not in lista_aberta_set:
+                            heapq.heappush(lista_aberta, (g_score[vizinho], vizinho))
+                            lista_aberta_set.add(vizinho)
+        return None
+
     def executar_e_avaliar(self):
         caminho = self.encontrar_caminho()
         if caminho: self.executar_caminho_animado(caminho)
@@ -138,17 +211,51 @@ class RoboBaseadoUtilidade(RoboBaseadoObjetivos):
             custo_total = sum(self.ambiente.get_custo(x, y) for x, y in caminho[1:])
             print(f"Custo Total: {custo_total}")
         return caminho
-    def encontrar_caminho(self):
-        lista_aberta = [(0, self.inicio)]; veio_de = {}; g_score = {(x, y): float('inf') for x in range(self.ambiente.n) for y in range(self.ambiente.n)}; g_score[self.inicio] = 0; f_score = {(x, y): float('inf') for x in range(self.ambiente.n) for y in range(self.ambiente.n)}; f_score[self.inicio] = self._h_heuristica(self.inicio, self.fim); lista_aberta_set = {self.inicio}
+
+class RoboUtilidadeParcial(RoboBaseadoUtilidade):
+    def __init__(self, ambiente, inicio, fim, visualizador=None):
+        super().__init__(ambiente, inicio, fim, visualizador)
+        self.mapa_conhecido = {}
+        self.caminho_percorrido = [inicio]
+
+    def executar_ciclo_planejamento(self):
+        passos = 0; limite_passos = (self.ambiente.n ** 2) * 2
+        while self.get_posicao() != self.fim and passos < limite_passos:
+            terrenos_visiveis = self.ambiente.observar_arredores(self.get_posicao(), raio=2)
+            self.mapa_conhecido.update(terrenos_visiveis)
+            caminho_planejado = self.encontrar_caminho_parcial()
+            if not caminho_planejado or len(caminho_planejado) < 2:
+                print("Não foi possível encontrar um caminho com o conhecimento atual. Falha."); break
+            
+            proximo_passo = caminho_planejado[1]
+            self.x, self.y = proximo_passo
+            self.caminho_percorrido.append(self.get_posicao())
+            
+            if self.visualizador:
+                self.visualizador.atualizar(self, self.caminho_percorrido, titulo="Etapa 4: Parcialmente Observável", caminho_planejado=caminho_planejado)
+            passos += 1
+        
+        if self.get_posicao() == self.fim:
+            custo_total = sum(self.ambiente.get_custo(x, y) for x, y in self.caminho_percorrido[1:])
+            print(f"\nSucesso: Sim! Custo Total: {custo_total}")
+        else:
+            print("\nSucesso: Não, não alcançou o destino no limite de passos.")
+
+    def encontrar_caminho_parcial(self):
+        # --- LÓGICA CORRIGIDA (DIJKSTRA) ---
+        lista_aberta = [(0, self.get_posicao())]; veio_de = {}; g_score = {(x, y): float('inf') for x in range(self.ambiente.n) for y in range(self.ambiente.n)}; g_score[self.get_posicao()] = 0; lista_aberta_set = {self.get_posicao()}
         while lista_aberta:
-            _, atual = heapq.heappop(lista_aberta); lista_aberta_set.remove(atual)
+            custo_atual, atual = heapq.heappop(lista_aberta); lista_aberta_set.remove(atual)
+            if custo_atual > g_score[atual]: continue
             if atual == self.fim: return self._reconstruir_caminho(veio_de, atual)
             x, y = atual
             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                 vizinho = (x + dx, y + dy)
                 if self.ambiente.is_valido(vizinho[0], vizinho[1]):
-                    custo_movimento = self.ambiente.get_custo(vizinho[0], vizinho[1]); tentativa_g_score = g_score[atual] + custo_movimento
+                    custo_movimento = self.mapa_conhecido.get(vizinho, 1)
+                    tentativa_g_score = g_score[atual] + custo_movimento
                     if tentativa_g_score < g_score[vizinho]:
-                        veio_de[vizinho] = atual; g_score[vizinho] = tentativa_g_score; f_score[vizinho] = g_score[vizinho] + self._h_heuristica(vizinho, self.fim)
-                        if vizinho not in lista_aberta_set: heapq.heappush(lista_aberta, (f_score[vizinho], vizinho)); lista_aberta_set.add(vizinho)
+                        veio_de[vizinho] = atual; g_score[vizinho] = tentativa_g_score
+                        if vizinho not in lista_aberta_set:
+                            heapq.heappush(lista_aberta, (g_score[vizinho], vizinho)); lista_aberta_set.add(vizinho)
         return None

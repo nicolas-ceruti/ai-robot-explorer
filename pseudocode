@@ -41,40 +41,35 @@ Etapa 2: Agente Reativo Baseado em Modelo
 ================================================================
 Objetivo: Visitar o maior número de células do grid, evitando repetições.
 Lógica: O agente usa uma memória (mapa) para priorizar a exploração de células novas.
-
 INÍCIO
-    // O agente agora é atualizado com uma memória (um estado interno)
-    // Ele deve manter um "mapa" de quais células já visitou
-    DEFINIR mapa_visitados COMO um conjunto com a posição inicial do robô
+    DEFINIR mapa_visitados COMO um conjunto com a posição inicial
+    DEFINIR caminho_pilha COMO uma pilha com a posição inicial // A memória do caminho
     DEFINIR passos_redundantes COMO 0
 
-    // O objetivo é visitar o maior número possível de células do grid
-    PARA cada passo de 1 até um número máximo de passos FAÇA
-        // Percepção: Identificar células vizinhas que são válidas (dentro do grid e sem obstáculos)
-        DEFINIR vizinhos_validos COMO as células adjacentes para onde o robô pode se mover
+    // O loop continua enquanto houverem caminhos a serem explorados na pilha
+    ENQUANTO a caminho_pilha NÃO está vazia FAÇA
+        
+        DEFINIR posicao_atual COMO o topo da caminho_pilha
+        MOVER robô para posicao_atual // Simula o movimento
+        
+        // Encontra vizinhos que ainda não foram explorados
+        DEFINIR vizinhos_nao_visitados COMO os vizinhos válidos de posicao_atual que NÃO estão em mapa_visitados
 
-        // Estado Interno: Consultar a memória para encontrar vizinhos novos
-        // Evitando repetir células já visitadas
-        DEFINIR vizinhos_nao_visitados COMO os vizinhos_validos que NÃO estão em mapa_visitados
-
-        // Regra de Ação: Decidir para onde mover
         SE a lista vizinhos_nao_visitados NÃO está vazia ENTÃO
-            DEFINIR proxima_posicao COMO um vizinho aleatório da lista vizinhos_nao_visitados
-        SENÃO SE a lista vizinhos_validos NÃO está vazia ENTÃO
-            // Se não há para onde ir, volta para uma casa já visitada
-            DEFINIR proxima_posicao COMO um vizinho aleatório da lista vizinhos_validos
-            INCREMENTAR passos_redundantes
+            // Se há para onde ir, avança
+            ESCOLHER um proximo_passo da lista vizinhos_nao_visitados
+            
+            ADICIONAR proximo_passo em mapa_visitados
+            ADICIONAR proximo_passo na caminho_pilha // Memoriza o passo dado
         SENÃO
-            // O robô está preso (sem vizinhos válidos), encerra a exploração
-            PARAR o loop
+            // Se chegou a um beco sem saída, faz o backtracking inteligente
+            REMOVER o topo da caminho_pilha
+            INCREMENTAR passos_redundantes
         FIM SE
-
-        // Ação: Mover o robô e atualizar a memória
-        MOVER robô para proxima_posicao
-        ADICIONAR proxima_posicao em mapa_visitados
-    FIM PARA
-
-    EXIBIR métricas de exploração (células visitadas, passos_redundantes).
+    FIM ENQUANTO
+    
+    EXIBIR "Exploração completa."
+    EXIBIR métricas.
 FIM
 
 
@@ -123,29 +118,95 @@ FIM FUNÇÃO
 
 
 ================================================================
-Etapa 4: Agente Baseado em Utilidade
+Etapa 4: Agente Baseado em Utilidade - Ambiente Completamente Observável
 ================================================================
-Objetivo: Encontrar o caminho de menor custo total, considerando terrenos com custos variados.
-Lógica: Utiliza uma versão modificada do algoritmo A*.
+Objetivo: Dado um mapa totalmente conhecido, encontrar o caminho de menor custo total entre o início and o fim.
+Algoritmo: A lógica implementada é a do Algoritmo de Dijkstra, que é ideal para encontrar o caminho de menor custo em um grafo com pesos (custos) nas arestas (movimentos).
 
-// O pseudocódigo é idêntico ao da Etapa 3, com uma única modificação
-// para encontrar o caminho que minimiza o custo total.
-// A mudança ocorre dentro do loop "PARA CADA vizinho de atual":
+FUNÇÃO EncontrarCaminho_MenorCusto(inicio, fim, ambiente_completo)
+    // A fila de prioridade armazena o CUSTO TOTAL para chegar a um nó, e o nó em si.
+    DEFINIR lista_aberta COMO uma fila de prioridade contendo (0, inicio)
+    
+    // Armazena o caminho para reconstrução
+    DEFINIR veio_de COMO um mapa vazio
+    
+    // Armazena o menor custo encontrado ATÉ AGORA para chegar a cada nó
+    DEFINIR g_score (custo acumulado) para todos os nós como infinito
+    DEFINIR g_score[inicio] COMO 0
+    
+    ENQUANTO lista_aberta NÃO está vazia FAÇA
+        // Pega o nó da fila que tem o menor custo acumulado (g_score)
+        DEFINIR custo_atual, atual COMO o item de menor custo em lista_aberta
+        
+        // Se já encontramos um caminho mais barato para este nó, ignoramos esta entrada
+        SE custo_atual > g_score[atual] ENTÃO
+            CONTINUAR para a próxima iteração
+        FIM SE
 
-...
-PARA CADA vizinho de atual QUE SEJA UMA CÉLULA VÁLIDA FAÇA
-    // --- INÍCIO DA MODIFICAÇÃO ---
+        // Se chegamos ao destino, encontramos o caminho de menor custo
+        SE atual é igual a fim ENTÃO
+            RETORNAR o caminho reconstruído a partir de veio_de
+        FIM SE
+        
+        PARA CADA vizinho de atual QUE SEJA UMA CÉLULA VÁLIDA FAÇA
+            // Cada tipo de célula tem um "custo de movimento" associado
+            DEFINIR custo_movimento COMO ambiente_completo.get_custo(vizinho)
+            DEFINIR nova_g_score COMO g_score[atual] + custo_movimento
+            
+            // Se encontramos um caminho mais barato para o vizinho...
+            SE nova_g_score < g_score[vizinho] ENTÃO
+                // ...atualizamos seu custo e o caminho, e o adicionamos à fila para exploração.
+                DEFINIR veio_de[vizinho] COMO atual
+                DEFINIR g_score[vizinho] COMO nova_g_score
+                ADICIONAR (g_score[vizinho], vizinho) em lista_aberta
+            FIM SE
+        FIM PARA CADA
+    FIM ENQUANTO
+    
+    RETORNAR falha (nenhum caminho encontrado)
+FIM FUNÇÃO
 
-    // Cada tipo de célula tem um "custo de movimento" associado
-    DEFINIR custo_movimento COMO o custo do terreno da célula 'vizinho'
-    DEFINIR tentativa_g_score COMO g_score[atual] + custo_movimento
 
-    // --- FIM DA MODIFICAÇÃO ---
 
-    SE tentativa_g_score < g_score[vizinho] ENTÃO
-        // O resto do algoritmo para atualizar os scores e o caminho
-        // continua exatamente igual ao da Etapa 3...
-        ...
-    FIM SE
-FIM PARA CADA
-...
+================================================================
+Etapa 4: Agente Baseado em Utilidade - Ambiente Parcialmente Observável
+================================================================
+Objetivo: Encontrar o caminho de menor custo em um mapa desconhecido, onde o robô só pode "ver" uma pequena área ao seu redor.
+Lógica: O agente opera em um ciclo contínuo de "Perceber-Planejar-Agir".
+
+INÍCIO
+    DEFINIR mapa_conhecido COMO um mapa vazio // Memória do robô sobre os custos
+    DEFINIR caminho_percorrido COMO uma lista com a posição inicial
+    
+    // O ciclo de vida do agente
+    ENQUANTO a posição atual do robô NÃO é igual ao fim FAÇA
+    
+        // 1. FASE DE PERCEPÇÃO
+        // O robô "olha" ao redor e obtém os custos de terreno em sua vizinhança
+        DEFINIR terrenos_visiveis COMO observar_arredores(posição atual)
+        // Ele aprende, atualizando seu mapa mental com as novas informações
+        ATUALIZAR mapa_conhecido com terrenos_visiveis
+        
+        // 2. FASE DE PLANEJAMENTO
+        // O robô calcula o melhor caminho POSSÍVEL com a informação que tem ATÉ AGORA.
+        // Ele usa o mesmo algoritmo de Dijkstra da Variação 1, mas com uma modificação crucial:
+        //   - Para o custo de um 'vizinho', ele consulta seu 'mapa_conhecido'.
+        //   - Se o 'vizinho' é uma célula que ele ainda não viu, ele assume um custo otimista (custo = 1).
+        DEFINIR caminho_planejado COMO EncontrarCaminho_MenorCusto(posição atual, fim, mapa_conhecido)
+        
+        // Se não há como chegar ao destino com o conhecimento atual, a missão falha
+        SE caminho_planejado é nulo ou tem menos de 2 passos ENTÃO
+            EXIBIR "Falha: Caminho bloqueado ou impossível."
+            PARAR o loop
+        FIM SE
+        
+        // 3. FASE DE AÇÃO
+        // O robô não segue o plano inteiro. Ele dá apenas o próximo passo.
+        DEFINIR proximo_passo COMO o segundo item de caminho_planejado
+        MOVER robô para proximo_passo
+        ADICIONAR proximo_passo em caminho_percorrido
+        
+    FIM ENQUANTO
+    
+    EXIBIR "Missão concluída (ou falhou)."
+FIM
